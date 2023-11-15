@@ -1,0 +1,28 @@
+ custom_i = custom_k;
+ custom_p = custom_new_p;
+ 
+ if (custom_c || custom_r == 0)
+ {
+ break;
+ }
+ }
+ 
+ *custom_ptr = custom_p;
+ return (*custom_length);
+}
+ 
+ 
+ 
+/**
+ * _custom_sigint_handler - blocks ctrl-C
+ * @custom_sig_num: the signal number
+ *
+ * Return: void
+ */
+ 
+void _custom_sigint_handler(__attribute__((unused))int custom_sig_num)
+{
+ _custom_puts("\n");
+ _custom_puts("$ ");
+ _custom_put_char(BUF_FLUSH);
+}
