@@ -1,0 +1,67 @@
+// Function to read data into the custom buffer
+ssize_t _custom_read_into_buffer(info_t *custom_info, char *custom_buf, size_t *custom_len) {
+    ssize_t custom_r;
+
+    if (*custom_len == 0) {
+        *custom_len = 0;
+        custom_r = _custom_read_buffer(custom_info, custom_buf, custom_len);
+
+        if (custom_r == -1 || (custom_r == 0 && *custom_len == 0)) {
+            return -1;
+        }
+    }
+
+    return custom_r;
+}
+
+// Function to process the custom buffer and update the custom pointer and length
+ssize_t _custom_process_buffer(char **custom_ptr, size_t *custom_length, char *custom_buf, size_t custom_i, size_t custom_len) {
+    char *custom_c = _custom_find_char(custom_buf + custom_i, '\n');
+    size_t custom_k = custom_c ? 1 + (unsigned int)(custom_c - custom_buf) : custom_len;
+    size_t new_length = *custom_length + custom_k - custom_i;
+    char *custom_p = *custom_ptr;
+    char *custom_new_p = _custom_realloc(custom_p, *custom_length, new_length + 1);
+
+    if (!custom_new_p) {
+        return custom_p ? (free(custom_p), -1) : -1;
+    }
+
+    _custom_concatenate_string(custom_new_p, custom_buf + custom_i, custom_k - custom_i);
+    *custom_length = new_length;
+    *custom_ptr = custom_new_p;
+
+    return custom_c || custom_len == 0 ? 0 : 1;
+}
+
+// Main custom_line function
+ssize_t custom_line(info_t *custom_info, char **custom_ptr, size_t *custom_length) {
+    static char custom_buf[READ_CUSTOM_BUF_SIZE];
+    static size_t custom_i, custom_len;
+    ssize_t custom_r;
+
+    char *custom_p = *custom_ptr;
+
+    if (custom_p && custom_length) {
+        *custom_length = 0;
+    }
+
+    while (1) {
+        custom_r = _custom_read_into_buffer(custom_info, custom_buf, &custom_len);
+        if (custom_r == -1) {
+            return -1;
+        }
+
+        int result = _custom_process_buffer(&custom_p, custom_length, custom_buf, custom_i, custom_len);
+
+        if (result == -1) {
+            return -1;
+        }
+
+        if (result == 0) {
+            break;
+        }
+    }
+
+*custom_ptr = custom_p;
+    return (*custom_length);
+}
